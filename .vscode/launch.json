@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-CommentsApiApplication<commentsapi>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "mainClass": "es.uv.dbcds.comments.commentsapi.CommentsApiApplication",
+            "projectName": "commentsapi",
+            "args": ""
+        }
+    ]
+}
