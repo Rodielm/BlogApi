@@ -10,5 +10,7 @@ public class CommentsApiApplication {
 		SpringApplication.run(CommentsApiApplication.class, args);
 	}
 
+	
+
 }
 

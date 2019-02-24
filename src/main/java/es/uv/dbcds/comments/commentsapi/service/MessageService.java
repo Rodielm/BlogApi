@@ -2,8 +2,7 @@ package es.uv.dbcds.comments.commentsapi.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Service;
 
 import es.uv.dbcds.comments.commentsapi.domain.Comment;
@@ -16,63 +15,66 @@ import es.uv.dbcds.comments.commentsapi.domain.Message;
 @Service
 public class MessageService {
 
+    private final AtomicInteger idSequence = new AtomicInteger();
+    private final AtomicInteger idSequenceComment = new AtomicInteger();
     private final List<Message> messages = new ArrayList<>();
-    private final List<Comment> comments = new ArrayList<>();
 
     public MessageService() {
-        
-        comments.add(new Comment(1,"Name 1","email@gmail.com","Text Comments"));
-
-        messages.add(new Message(1, "Message Titulo 1", "Cuerpo 1", comments));
-        messages.add(new Message(1, "Message Titulo 1", "Cuerpo 1", new ArrayList<Comment>()));
-        messages.add(new Message(2, "Message Titulo 2", "Cuerpo 2", new ArrayList<Comment>()));
-        messages.add(new Message(3, "Message Titulo 3", "Cuerpo 3", new ArrayList<Comment>()));
-        messages.add(new Message(4, "Message Titulo 4", "Cuerpo 4", new ArrayList<Comment>()));
-        
+        messages.add(new Message(idSequence.incrementAndGet(), "My First Message", "Content of the first Message"));
+        messages.add(new Message(idSequence.incrementAndGet(), "My second Message", "Content 2nd Message"));
     }
 
-    public List<Message> getMessage() {
+    public List<Message> getMessages() {
         return messages;
     }
 
-    public Optional<Message> getMessageById(int id) {
-        return this.messages.stream().filter(m -> m.getId() == id).findFirst();
+    public Message getMessageById(int id) {
+        return messages.stream().filter(m -> m.getId() == id).findFirst()
+                .orElseThrow(() -> new MessageNotFoundException("No message found with id " + id));
     }
 
-    public Optional<Comment> getCommentById(int idMessage, int idComments) {
-        return this.messages.stream().filter(m -> m.getId() == idMessage).findFirst().get().getComments().stream()
-                .filter(c -> c.getId() == idComments).findAny();
+    public Message addMessage(Message message) {
+        message.setId(idSequence.incrementAndGet());
+        messages.add(message);
+        return message;
     }
 
-    public void addMensaje(Message mensaje) {
-        messages.add(mensaje);
+    public Message updateMessage(int id, Message message) {
+        Message oldMessage = getMessageById(id);
+        oldMessage.setTitle(message.getTitle());
+        oldMessage.setBody(message.getBody());
+        oldMessage.setComments(message.getComments());
+        return oldMessage;
     }
 
-    public void addComment(int id, Comment comment) {
-        getMessageById(id).get().getComments().add(comment);
+    public void deleteMessage(int id) {
+        messages.removeIf(m -> m.getId() == id);
     }
 
-    public void updateMensaje(Message mensaje) {
-        Optional<Message> mensajeUpdate = getMessageById(mensaje.getId());
-        if (mensajeUpdate.isPresent()) {
-            getMessageById(mensaje.getId()).get().setBody(mensaje.getBody());
-        }
+    ///////// Comments /////////////////////////
+
+    public Comment addComment(int id, Comment comment) {
+        comment.setId(idSequenceComment.incrementAndGet());
+        getMessageById(id).getComments().add(comment);
+        return comment;
     }
 
-    public void updateComentario(int idMessage, Comment comments) {
-        getCommentById(idMessage, comments.getId()).get().setText(comments.getText());
+    // public Optional<Comment> getCommentById(int idMessage, int idComments) {
+    // return this.messages.stream().filter(m -> m.getId() ==
+    // idMessage).findFirst().get().getComments().stream()
+    // .filter(c -> c.getId() == idComments).findAny();
+    // }
+
+    public Comment updateComment(int idMessage,int idComment ,Comment comments) {
+        Comment oldComment = getMessageById(idMessage).getComments().stream().filter(c -> c.getId() == idComment)
+                .findAny().orElse(null);
+        oldComment.setText(comments.getText());
+        return oldComment;
     }
 
-    public void deleteMensaje(int id) {
-        Optional<Message> mensaje = messages.stream().filter(r -> r.getId() == id).findFirst();
-        if (mensaje.isPresent()) {
-            messages.remove(mensaje.get());
-        }
-    }
+    public void deleteComment(int idMessage, int idComment) {
+        getMessageById(idMessage).getComments().removeIf(c -> c.getId() == idComment);
 
-    public void deleteCommnets(int idMessage, int idComments) {
-        Optional<Comment> comentario = getCommentById(idMessage, idComments);
-        getMessageById(idMessage).get().getComments().remove(comentario.get());
     }
 
 }

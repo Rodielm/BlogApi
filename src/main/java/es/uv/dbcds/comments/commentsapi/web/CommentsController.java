@@ -2,6 +2,8 @@ package es.uv.dbcds.comments.commentsapi.web;
 
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.uv.dbcds.comments.commentsapi.domain.Comment;
@@ -22,47 +25,46 @@ import es.uv.dbcds.comments.commentsapi.service.MessageService;
  */
 
 @RestController
-@RequestMapping("api/")
+@RequestMapping("api/messages/{id}/comments")
 public class CommentsController {
 
     @Autowired
     private MessageService messageService;
 
-    public CommentsController(MessageService mensajeService) {
-        this.messageService = mensajeService;
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public Comment addComment(@PathVariable("id") int idMessage, @RequestBody @Valid Comment comment) {
+        return messageService.addComment(idMessage, comment);
     }
 
-    @GetMapping("comments/{idMensaje}/{idComments}")
-    public ResponseEntity<Optional<Comment>> getCommentById(@PathVariable("idMensaje") int idMessage,
-            @PathVariable("idComments") int idComments) {
-
-        Optional<Comment> c = messageService.getCommentById(idMessage, idComments);
-        if (!c.isPresent()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-
-        return new ResponseEntity<>(c, HttpStatus.OK);
+    @PutMapping("/{idComment}")
+    public Comment updateComment(@PathVariable("id") int idMessage,@PathVariable("idComment") int idComment,@RequestBody Comment comment) {
+        return messageService.updateComment(idMessage,idComment,comment);
     }
 
-    @PostMapping("comments/{idMessage}")
-    public ResponseEntity<Comment> addComentario(@PathVariable("idMessage") int idMessage,
-            @RequestBody Comment comment) {
-        messageService.addComment(idMessage, comment);
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    @DeleteMapping("/{idComment}")
+    public void deleteComment(@PathVariable("id") int idMessage, @PathVariable("idComment") int idComment) {
+        messageService.deleteComment(idMessage, idComment);
     }
 
-    @PutMapping("comments/{idMessage}")
-    public ResponseEntity<Comment> updateComentario(@PathVariable("idMessage") int idMessage,
-            @RequestBody Comment comment) {
-                messageService.updateComentario(idMessage, comment);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+        // @GetMapping("/{idComments}")
+    // public ResponseEntity<Optional<Comment>> getCommentById(@PathVariable("idMensaje") int idMessage,
+    //         @PathVariable("idComments") int idComments) {
 
-    @DeleteMapping("comments/{idMessage}/{idComment}")
-    public ResponseEntity<Comment> deleteComment(@PathVariable("idMessage") int idMessage,
-            @PathVariable int idComment) {
-        messageService.deleteCommnets(idMessage, idComment);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+    //     Optional<Comment> c = messageService.getCommentById(idMessage, idComments);
+    //     if (!c.isPresent()) {
+    //         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    //     }
+
+    //     return new ResponseEntity<>(c, HttpStatus.OK);
+    // }
+
+    // @PostMapping()
+    // public ResponseEntity<Comment> addComentario(@PathVariable("idMessage") int
+    // idMessage,
+    // @RequestBody Comment comment) {
+    // messageService.addComment(idMessage, comment);
+    // return new ResponseEntity<>(HttpStatus.CREATED);
+    // }
 
 }
