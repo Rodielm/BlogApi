@@ -1,6 +1,7 @@
 package es.uv.dbcds.comments.commentsapi.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ import es.uv.dbcds.comments.commentsapi.domain.Message;
 public class MessageService {
 
     private final AtomicInteger idSequence = new AtomicInteger();
-    private final AtomicInteger idSequenceComment = new AtomicInteger();
+    private final HashMap<Integer, Integer> idSequenceComment = new HashMap<>();
     private final List<Message> messages = new ArrayList<>();
 
     public MessageService() {
@@ -54,7 +55,8 @@ public class MessageService {
     ///////// Comments /////////////////////////
 
     public Comment addComment(int id, Comment comment) {
-        comment.setId(idSequenceComment.incrementAndGet());
+        int idComment = CommentIncrement(id);
+        comment.setId(idComment);
         getMessageById(id).getComments().add(comment);
         return comment;
     }
@@ -65,7 +67,7 @@ public class MessageService {
     // .filter(c -> c.getId() == idComments).findAny();
     // }
 
-    public Comment updateComment(int idMessage,int idComment ,Comment comments) {
+    public Comment updateComment(int idMessage, int idComment, Comment comments) {
         Comment oldComment = getMessageById(idMessage).getComments().stream().filter(c -> c.getId() == idComment)
                 .findAny().orElse(null);
         oldComment.setText(comments.getText());
@@ -75,6 +77,17 @@ public class MessageService {
     public void deleteComment(int idMessage, int idComment) {
         getMessageById(idMessage).getComments().removeIf(c -> c.getId() == idComment);
 
+    }
+
+    public int CommentIncrement(Integer idMensaje) {
+        int idIncrement = 0;
+        if (idSequenceComment.containsKey(idMensaje)) {
+            idIncrement = idSequenceComment.get(idMensaje);
+            idSequenceComment.put(idMensaje,++idIncrement );
+        } else {
+            idSequenceComment.put(idMensaje,++idIncrement );
+        }
+        return idIncrement;
     }
 
 }
