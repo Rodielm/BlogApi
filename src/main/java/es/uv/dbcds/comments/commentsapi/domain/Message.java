@@ -7,15 +7,15 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Message
  */
 
-@Setter
-@Getter
+@Data
+@NoArgsConstructor
 public class Message {
 
     @Min(0)
@@ -27,6 +27,9 @@ public class Message {
     @NotNull
     private String body;
     
+    @Min(0)
+    private int like;
+
     private List<Comment> comments;
 
     public Message (int id, String title, String body){
@@ -35,5 +38,6 @@ public class Message {
         this.title = title;
         this.body = body;
         this.comments = new ArrayList<Comment>();
+        this.like = 0;
     }
 }

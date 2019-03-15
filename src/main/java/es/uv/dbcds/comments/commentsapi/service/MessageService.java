@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import es.uv.dbcds.comments.commentsapi.domain.Comment;
 import es.uv.dbcds.comments.commentsapi.domain.Message;
 
+
 /**
  * MessageService
  */
@@ -20,6 +21,9 @@ public class MessageService {
     private final HashMap<Integer, Integer> idSequenceComment = new HashMap<>();
     private final List<Message> messages = new ArrayList<>();
 
+    // private final MessageRepository repository;
+
+    
     public MessageService() {
         messages.add(new Message(idSequence.incrementAndGet(), "My First Message", "Content of the first Message"));
         messages.add(new Message(idSequence.incrementAndGet(), "My second Message", "Content 2nd Message"));
@@ -32,6 +36,22 @@ public class MessageService {
     public Message getMessageById(int id) {
         return messages.stream().filter(m -> m.getId() == id).findFirst()
                 .orElseThrow(() -> new MessageNotFoundException("No message found with id " + id));
+    }
+
+    public Message addLiketoMessage(int id){
+        Message m = this.getMessageById(id);
+        int cont = m.getLike();
+        m.setLike(++cont);
+        return m;
+    }
+
+
+    public Comment addLiketoComment(int id, int idComment){
+        Comment comment = this.getMessageById(id).getComments().stream()
+        .filter(c -> c.getId() == idComment).findFirst().orElse(null);
+        int cont = comment.getLike();
+        comment.setLike(++cont);
+        return comment;
     }
 
     public Message addMessage(Message message) {
@@ -56,6 +76,7 @@ public class MessageService {
 
     public Comment addComment(int id, Comment comment) {
         int idComment = CommentIncrement(id);
+        comment.setParent(getMessageById(id));
         comment.setId(idComment);
         getMessageById(id).getComments().add(comment);
         return comment;

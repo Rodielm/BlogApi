@@ -1,10 +1,13 @@
 package es.uv.dbcds.comments.commentsapi.web;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,8 +20,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import es.uv.dbcds.comments.commentsapi.domain.Message;
+import es.uv.dbcds.comments.commentsapi.service.MessageResourceAssembler;
 import es.uv.dbcds.comments.commentsapi.service.MessageService;
 
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 /**
  * MensajeApi
  */
@@ -27,17 +32,30 @@ import es.uv.dbcds.comments.commentsapi.service.MessageService;
 @RequestMapping("api/messages")
 public class MessageController {
 
+    MessageResourceAssembler assembler;
+
     @Autowired
     private MessageService messageService;
 
+    MessageController(MessageResourceAssembler assembler){
+        this.assembler = assembler;
+    }
+
     @GetMapping
-    public List<Message> getAll() {
-        return messageService.getMessages();
+    public Resources<Resource<Message>> getAll() {
+
+        List<Resource<Message>> messages = messageService.getMessages().stream()
+        .map(assembler::toResource)
+        .collect(Collectors.toList());
+
+        return new Resources<>(messages,
+        linkTo(methodOn(MessageController.class).getAll()).withSelfRel());
     }
 
     @GetMapping("/{id}")
-    public Message getMessage(@PathVariable("id") int id) {
-        return messageService.getMessageById(id);
+    public Resource<Message> getMessage(@PathVariable("id") int id) {
+        Message m = messageService.getMessageById(id);
+        return assembler.toResource(m);
     }
 
     @PostMapping()
@@ -55,6 +73,12 @@ public class MessageController {
     @PutMapping(value = "/{id}")
     public Message updateMessage(@PathVariable("id") int id, @RequestBody Message message) {
         return messageService.updateMessage(id, message);
+    
+    }
+
+    @PutMapping(value = "/{id}/like")
+    public Message addLikeMessage(@PathVariable("id") int id) {
+        return messageService.addLiketoMessage(id);
     }
 
     // @GetMapping("messages/{id}")

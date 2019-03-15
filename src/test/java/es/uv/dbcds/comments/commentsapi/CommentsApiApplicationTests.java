@@ -1,4 +1,4 @@
-package es.uv.dbcds.comments.CommentsApi;
+package es.uv.dbcds.comments.commentsapi;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
